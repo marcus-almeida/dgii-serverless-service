@@ -1,0 +1,18 @@
+service: dgii-serverless-service
+
+provider:
+  name: 'aws'
+  runtime: 'nodejs8.10'
+  stage: 'dev'
+  region: 'us-east-1'
+
+functions:
+  getContribuyentes:
+    handler: handler.getContribuyentes
+    events:
+      - http: 
+          method: GET
+          path: /getcontribuyentes/{rnc}
+          private: false
+					
+		
