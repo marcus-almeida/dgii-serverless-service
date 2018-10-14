@@ -10,13 +10,14 @@
   "devDependencies": {},
   "scripts": {
     "aws-deploy": "sls deploy --aws-profile serverless",
-    "getContribuyentes": "sls invoke local -f getContribuyentes -p parameters.json"
+    "getContribuyentes": "sls invoke local -f getContribuyentes -p parameters.json",
+		"getNcf": "sls invoke local -f getNcf -p parameters.json"
   },
 	"repository": {
 	    "type": "git",
 	    "url": "https://github.com/marcus-almeida/dgii-serverless-service.git"
 	 },
   "keywords": [],
-  "author": "Marcus Almeida",
+  "author": "Marcus Almeida, Finean Group",
   "license": "MIT"
 }

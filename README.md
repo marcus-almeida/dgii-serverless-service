@@ -1,6 +1,6 @@
 # serverless-dgii-service
 
-Serverless framework template for AWS Lambda based REST service that provides DGII RNC lookup operations. RNCs (Registro Nacional del Contribuyente) are Dominican Republic's taxpayer registration numbers. They are managed by Dominican Republic tax office DGII (Dirección General de Impuestos Internos).
+Serverless framework template for AWS Lambda based REST service that provides DGII RNC and NCF lookup operations. RNCs (Registro Nacional del Contribuyente) are Dominican Republic's taxpayer registration numbers. NCFs (Número de Comprobante Fiscal) are used to number invoices for the purposes of tax reporting. They are managed by Dominican Republic tax office DGII (Dirección General de Impuestos Internos).
 
 
 ## Quick Start
@@ -37,7 +37,7 @@ Serverless framework template for AWS Lambda based REST service that provides DG
 	
 4. **Deploy!**
 
-	The project provides npm scripts to make deployment a breeze!
+	This project includes npm scripts to make deployment a breeze!
 	
 	```bash
 	# Deploy to AWS
@@ -46,14 +46,21 @@ Serverless framework template for AWS Lambda based REST service that provides DG
 	
 ## Service Usage
 
-  We currently have a version deployet at https://asd8p4kvlc.execute-api.us-east-1.amazonaws.com/dev/getcontribuyentes/{rnc}.
+  We currently have a version deployet at with the following endpoints: 
+
+	GET - https://asd8p4kvlc.execute-api.us-east-1.amazonaws.com/dev/getcontribuyentes/{rnc}
+ 
+	GET - https://asd8p4kvlc.execute-api.us-east-1.amazonaws.com/dev/getncf/{rnc}/{ncf}
 
   To use the service just send a GET request adding your RNC to the path parameter. This will return an object (JSON) with the company or individual information if it is a valid RNC. If the RNC is not valid or doesn't exist it returns an empty array [].
 
+#### getContribuyentes
+
 	```console
 	
-  	# GET request to (valid RNC):
-  	https://asd8p4kvlc.execute-api.us-east-1.amazonaws.com/dev/getcontribuyentes/130102058
+  	# GET request to valid RNC:
+		https://asd8p4kvlc.execute-api.us-east-1.amazonaws.com/dev/getcontribuyentes/130102058
+		
 		# Yields:
 		{
 			"rnc":"130102058",
@@ -64,18 +71,47 @@ Serverless framework template for AWS Lambda based REST service that provides DG
 			"paymentRegime":"NORMAL"
 		}
 	
-  	# GET request to (invalid RNC):
-  	https://asd8p4kvlc.execute-api.us-east-1.amazonaws.com/dev/getcontribuyentes/130102340580
+  	# GET request to invalid RNC:
+		https://asd8p4kvlc.execute-api.us-east-1.amazonaws.com/dev/getcontribuyentes/130102340580
+		
 		# Yields:
 		[]
 		
 	```
-	
-## To consider
 
-  This project also contains a scripts to invoke functions inside handler.js locally (currently only getContribuyentes, more coming soon). This commant takes parametes from paramaters.json file (which you can edit with your own info) and sends it to the function being called. For example you can call getContribuyentes locally with:
+#### getNcf
+
+	```console
+	
+		# GET request to valid RNC and NCF:
+		https://asd8p4kvlc.execute-api.us-east-1.amazonaws.com/dev/getcontribuyentes/130102058/B0100000003
+		
+		# Yields:
+		{
+			"valid": true
+		}
+	
+		# GET request to invalid RNC and NCF combination:
+		https://asd8p4kvlc.execute-api.us-east-1.amazonaws.com/dev/getcontribuyentes/130102340580/Z0104230003
+		
+		# Yields:
+		{
+			"valid": false
+		}
+		
+	```
+
+
+## Invoke functions locally with npm scripts
+
+  This project also contains a scripts to invoke functions inside handler.js locally. These commands take parametes from paramaters.json file (which you can edit with your own info) and sends it to the function being called as pathParameters. For example you can call getContribuyentes and getNcf locally with:
 
 	```bash
+		# Invoke function locally for RNC validation
 		npm run getContribuyentes
+		
+		# Invoke function locally for NCF and RNC validation
+		npm run getNcf
+		
 	```
 	

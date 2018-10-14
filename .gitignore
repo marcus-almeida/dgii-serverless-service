@@ -9,3 +9,7 @@ jspm_packages
 .DS_Store
 *.DS_Store
 */.DS_Store
+
+# Playground files
+*playground*
+

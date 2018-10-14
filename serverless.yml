@@ -15,4 +15,12 @@ functions:
           path: /getcontribuyentes/{rnc}
           private: false
 					
+  getNcf:
+    handler: handler.getNcf
+    events:
+      - http: 
+          method: GET
+          path: /getncf/{rnc}/{ncf}
+          private: false
+					
 		

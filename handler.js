@@ -31,6 +31,24 @@ const responses = {
   }
 };
 
+// Soap XML header and closing is the same for all requests at WSMovilDGII
+// so we made a function to not have to repeat ourselves every time.
+const composeSoapXml = (soapBody) => {
+	const soapHeader =
+		'<?xml version="1.0" encoding="utf-8"?>' +
+		'<soap12:Envelope ' +
+			'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
+			'xmlns:xsd="http://www.w3.org/2001/XMLSchema" ' +
+			'xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">' +
+			'<soap12:Body>';
+			
+	const soapClosing = 
+			'</soap12:Body>' +
+		'</soap12:Envelope>';
+		
+	return soapHeader + soapBody + soapClosing;
+};
+
 
 module.exports.getContribuyentes = (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
@@ -45,22 +63,15 @@ module.exports.getContribuyentes = (event, context, callback) => {
 	  'soapAction': 'https://dgii.gov.do/GetContribuyentes',
 	};
 	
-	const xml =
-		'<?xml version="1.0" encoding="utf-8"?>' +
-		'<soap12:Envelope ' +
-			'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
-			'xmlns:xsd="http://www.w3.org/2001/XMLSchema" ' +
-			'xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">' +
-			'<soap12:Body>' +
-				'<GetContribuyentes xmlns="http://dgii.gov.do/">' +
-					`<value>${rnc}</value>` +
-					'<patronBusqueda>0</patronBusqueda>' +
-					'<inicioFilas>1</inicioFilas>' +
-					'<filaFilas>1</filaFilas>' +
-					'<IMEI>""</IMEI>' +
-				'</GetContribuyentes>' +
-			'</soap12:Body>' +
-	  '</soap12:Envelope>';
+	const xml = composeSoapXml(
+		'<GetContribuyentes xmlns="http://dgii.gov.do/">' +
+			`<value>${rnc}</value>` +
+			'<patronBusqueda>0</patronBusqueda>' +
+			'<inicioFilas>1</inicioFilas>' +
+			'<filaFilas>1</filaFilas>' +
+			'<IMEI>""</IMEI>' +
+		'</GetContribuyentes>'
+	);
 
 	(async () => {
 		try {
@@ -96,4 +107,48 @@ module.exports.getContribuyentes = (event, context, callback) => {
 		}
 	})();
 	
+};
+
+
+module.exports.getNcf = (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  const rnc = event.pathParameters.rnc;
+	const ncf = event.pathParameters.ncf;
+	console.log(rnc);
+	console.log(ncf);
+
+	const url = 'http://www.dgii.gov.do/wsMovilDGII/WSMovilDGII.asmx';
+
+	const headers = {
+	  'Content-Type': 'application/soap+xml; charset=utf-8',
+	  'soapAction': 'https://dgii.gov.do/GetNCF',
+	};
+
+	const xml = composeSoapXml(
+		'<GetNCF xmlns="http://dgii.gov.do/">' +
+			`<RNC>${rnc}</RNC>` +
+			`<NCF>${ncf}</NCF>` +
+			'<IMEI>""</IMEI>' +
+		'</GetNCF>'
+	);
+
+	(async () => {
+		try {
+			const { response } = await soapRequest(url, headers, xml);
+			const { body, statusCode } = response;
+			console.log('RESPONSE: ', response);			
+			
+			parseString(body, function (err, result) {
+				const parsedResponse = JSON.parse(result['soap:Envelope']['soap:Body'][0].GetNCFResponse[0].GetNCFResult[0]);
+				const responseObject = { valid: parsedResponse.ES_VALIDO ? true : false };
+				
+				callback(null, responses.success(responseObject));
+			});
+		} catch (error) {
+			// Handle not found or invalid NCF and RNC combination
+			console.log('Error: ', error);
+			callback(null, responses.success({valid: false}));
+		}
+	})();
 };
